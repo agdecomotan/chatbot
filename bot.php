@@ -30,7 +30,7 @@ $response = null;
 
 if($messageText == "hi") {
 
-    $answer = "Hello";
+    $answer = "Welcome to remindeer!";
 
 }
 
