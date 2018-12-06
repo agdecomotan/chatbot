@@ -27,7 +27,7 @@ elseif ($messageText == "time") {
 	//$json = '{"foo-bar": 12345}';
 	//$obj = json_decode($json);
     $answer = "What is the reminder about?";
-    $answer = "test" . file_lines;
+    $answer = "test" . $file_lines;
 }
 
 $response = [
