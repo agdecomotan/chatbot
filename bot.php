@@ -33,6 +33,12 @@ if($messageText == "hi") {
     $answer = "Welcome to remindeer!";
 
 }
+elseif ($messageText == "remind") {
+
+    $answer = "Ihhhh";
+
+}
+
 
 //send message to facebook bot
 
