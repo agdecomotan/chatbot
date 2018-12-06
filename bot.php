@@ -9,7 +9,6 @@ if ($_REQUEST['hub_verify_token'] === $hubVerifyToken) {
   exit;
 }
 
-
 $input = json_decode(file_get_contents('php://input'), true);
 $senderId = $input['entry'][0]['messaging'][0]['sender']['id'];
 $messageText = $input['entry'][0]['messaging'][0]['message']['text'];
@@ -24,8 +23,11 @@ elseif ($messageText == "remind") {
     $textt = $answer;
 }
 elseif ($messageText == "time") {
+	$file_lines = file('remind');
+	//$json = '{"foo-bar": 12345}';
+	//$obj = json_decode($json);
     $answer = "What is the reminder about?";
-    $answer = "test" . $textt;
+    $answer = "test" . file_lines;
 }
 
 $response = [
