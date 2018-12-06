@@ -25,7 +25,7 @@ elseif ($messageText == "remind") {
 }
 elseif ($messageText == "time") {
     $answer = "What is the reminder about?";
-    $answer = "test" + $textt;
+    $answer = "test" . $textt;
 }
 
 $response = [
