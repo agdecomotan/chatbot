@@ -2,9 +2,8 @@
 global $argv;
 $senderId = $argv[1];
 $accessToken = $argv[2]; 
-$user = $argv[3];
-$delay = $argv[4];
-$message = $argv[5];
+$delay = $argv[3];
+$message = $argv[4];
 sleep((int)$delay);
 $messageToSend = [
     'recipient' => [ 'id' => $senderId  ],
@@ -14,7 +13,7 @@ $messageToSend = [
         "template_type"=>"generic",
         "elements"=>[
         [
-            "title"=>"Hey ".$user.", It's time!",
+            "title"=>"REMINDER",
             "subtitle"=> urldecode($message)
         ]
         ]
