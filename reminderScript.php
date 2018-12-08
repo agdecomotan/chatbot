@@ -2,8 +2,7 @@
 global $argv;
 $senderId = $argv[1];
 $accessToken = $argv[2]; 
-$delay = $argv[3];
-$message = $argv[4];
+$message = $argv[3];
 sleep((int)$delay);
 $messageToSend = [
     'recipient' => [ 'id' => $senderId  ],
