@@ -13,22 +13,55 @@ $input = json_decode(file_get_contents('php://input'), true);
 $senderId = $input['entry'][0]['messaging'][0]['sender']['id'];
 $messageText = $input['entry'][0]['messaging'][0]['message']['text'];
 $response = null;
-$textt = "";
+$command = strtolower($messageText);
 
-if($messageText == "hi") {
-    $answer = "Welcome to remindeer!";
+$reminder = 'reminder';
+$history = 'history';
+$historyFile = fopen($history, 'a');
+$data = file($history);
+
+$lastMsg = $data[count($data)-1];  
+$lastCommand = strtolower($lastMsg);
+$record = true;
+
+if($lastCommand == "remind"){
+  $messageText = "what:" . $messageText;
+  $answer = "When do you want to be reminded?";  
 }
-elseif ($messageText == "remind") {
+elseif(substr($lastCommand, 0, 5) === "what:") {
+  $answer = "Okay! I will remind you about this on ";
+  $count = count(file($reminder));  
+  $reminderValue = "[ " . $count . " ]" . "test";
+    
+  $reminderFile = fopen($reminder, 'a');
+  $data = file($reminderFile);
+  fwrite($reminderFile, "\n". $reminderValue);
+  fclose($reminderFile);
+}
+else{
+  if($command == "hi" or $command == "hello") {
+    $answer = "Welcome to Remindeer!";
+  }
+  elseif ($command == "remind") {
     $answer = "What is the reminder about?";
-    $textt = $answer;
+  }
+  elseif ($command == "list") {
+    $answer = file_get_contents($reminder);
+  }
+  elseif ($command == "last") {
+    $answer = $lastMsg;
+  }
+  else{
+    $answer = "Command not found.";
+  }
 }
-elseif ($messageText == "time") {
-	$file_lines = file('remind');
-	//$json = '{"foo-bar": 12345}';
-	//$obj = json_decode($json);
-    $answer = "What is the reminder about?";
-    $answer = "test" . $file_lines;
+
+if($record == true)
+{
+  fwrite($historyFile, "\n". $messageText);
+  fclose($historyFile);
 }
+
 
 $response = [
     'recipient' => [ 'id' => $senderId ],
@@ -41,7 +74,7 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($response));
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 
 if(!empty($input)){
-	$result = curl_exec($ch);
+  $result = curl_exec($ch);
 }
 
 curl_close($ch);
