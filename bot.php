@@ -29,14 +29,18 @@ if($lastCommand == "remind"){
   $answer = "When do you want to be reminded?";  
 }
 elseif(substr($lastCommand, 0, 5) === "what:") {
-  $answer = "Okay! I will remind you about this on ";
-  $count = count(file($reminder));  
-  $reminderValue = "[ " . $count . " ]" . "test";
+  $answer = "Okay! I will remind you about this on ";  
+  $remindMsg = substr($lastMsg, 5);
     
   $reminderFile = fopen($reminder, 'a');
   $data = file($reminderFile);
-  fwrite($reminderFile, "\n". $reminderValue);
-  fclose($reminderFile);
+  fwrite($reminderFile, $remindMsg . "\n");
+  fclose($reminderFile); 
+        
+  $output = shell_exec('crontab -l');
+  $cronCommand = '/usr/bin/php /var/www/html/chatbot/reminderScript.php '.$senderId.' '.$accessToken.' '.urlencode($remindMsg).' > /dev/null 2>/dev/null &';
+  file_put_contents('crontab.txt', $output.'* * * * * '.$cronCommand.PHP_EOL);     
+  shell_exec('crontab crontab.txt');  
 }
 else{
   if($command == "hi" or $command == "hello") {
@@ -47,12 +51,31 @@ else{
   }
   elseif ($command == "list") {
     $answer = file_get_contents($reminder);
+    $remindList = "";
+    
+    $handle = fopen($reminder, "r");
+    $lineNumber = 1;
+    if ($handle) {
+        while (($line = fgets($handle)) !== false) {        
+          if($line !== "")
+          {
+            $remindList = $remindList . "[ " . $lineNumber . " ] " . $line;
+            $lineNumber++;
+          }
+        }    
+        fclose($handle);
+    } 
+    
+    $answer = $remindList;
   }
   elseif ($command == "last") {
     $answer = $lastMsg;
   }
+  elseif ($command == "listen") {
+    //INSERT TWITTER HASHTAG HERE
+  }  
   else{
-    $answer = "Command not found.";
+    $answer = "Command not found.";     
   }
 }
 
