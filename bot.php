@@ -6,7 +6,6 @@ use Abraham\TwitterOAuth\TwitterOAuth;
 $hubVerifyToken = 'reminddeertoken';
 $accessToken =   "EAAFDrdjEq7QBAIaR9Ws1ViFjn7LEyXYADRzXqZB5UPjp9SKxwVyKSzvqFz4T1m0lyQJabdqu3Lrr5Sxsg8fzkFHcCgnETBAiA2XFMQ20HtTgfmtKmgVn0ZAuUu2GZAWvrbqBZC7EXb7Hv5fVfaLUQL2pCMFdW9YIlmFXNLTcjQZDZD";
 
-// for twitter
 $consumer = "XixVwN9KqQrFlFnVWN2AN6z7t";
 $consumersecret = "2NLUfCxpjeIlOq7ZeQHErYiafUIBzkv2biTYM36UkbqlvfoMf0";
 $access_token = "426150797-o7EVUFe61K9Z8D8khiNiDtVseS1H2STgj7XVXnOd";
@@ -14,17 +13,12 @@ $access_tokensecret = "4YhheEa8hZbRxIcJ6awnlhIsTlxmiwPN5D2DEVmBR68Eh";
 $connection = new TwitterOAuth($consumer, $consumersecret, $access_token, $access_tokensecret);
 $content = $connection->get("account/verify_credentials");
 function beliefmedia_hashtags($string) {
- 	/* Match hashtags */
  	preg_match_all('/#(\w+)/', $string, $matches);
- 
-  	/* Add all matches to array */
   	foreach ($matches[1] as $match) {
     	$keywords[] = '#'.$match;
-  	}
- 
+  	} 
  	return (array) $keywords;
 }
-// for twitter end
 
 function callAPI($accessToken,$response,$input){
     $ch = curl_init('https://graph.facebook.com/v2.6/me/messages?access_token='.$accessToken);
@@ -99,16 +93,14 @@ else{
 				}
 			}    
 			fclose($handle);
-		} 
-	
+		} 	
 		$answer = $remindList;
   	}
 	elseif ($command == "last") {
 		$answer = $lastMsg;
 	}
-	// twitter start
-	elseif(strpos($command,'listen #') !== false) {
-		$get_hashtag =  array_unique(beliefmedia_hashtags($command)); //get first hashtag for now
+  elseif(substr($command, 0, 8) === "listen #") {
+		$get_hashtag =  array_unique(beliefmedia_hashtags($command));
 		$hashtag = $get_hashtag[0];
 		$answer =  "You are now listening to ".$hashtag." tweets.";
 		
@@ -175,19 +167,49 @@ else{
             ];
             callAPI($accessToken,$response,$input);
 		}
-		
-	}else if (strpos($command,'cancel #') !== false) {
-		$get_hashtag =  array_unique(beliefmedia_hashtags($command)); //get first hashtag for now
-		$hashtag = $get_hashtag[0];
-		
-		$answer =  "You are no longer listening to ".implode(', ',$get_hashtags)." tweets.";	
-	
-  	}  
-	// twitter end
-	// nagfoflood ng command  not found on my side.
-	// else{
-	// 	$answer = "Command not found.";     
-	// }
+	} elseif(substr($command, 0, 8) === "cancel #") {	
+    $get_hashtag =  array_unique(beliefmedia_hashtags($command)); 
+    $hashtag = $get_hashtag[0];		
+    $answer =  "You are no longer listening to ".implode(', ',$get_hashtags)." tweets.";	
+  } elseif (substr($command, 0, 6) === "cancel") {
+    $num = substr($command, 6);
+    $handle = fopen($reminder, "r");
+    $lineNumber = 1;
+    $selectedLine = "";
+    if ($handle) {
+        while (($line = fgets($handle)) !== false) {        
+          if($lineNumber == $num)
+          {
+            $selectedLine = $line; 
+            break;
+          }
+          $lineNumber++;
+        }    
+        fclose($handle);
+    } 
+ 
+    $output = shell_exec('crontab -l');
+    $cronjob = shell_exec('crontab -l | grep -i '.str_replace(" ","+",$selectedLine));
+    $newcron = str_replace($cronjob,"",$output);
+    
+    file_put_contents('crontab.txt', $newcron.PHP_EOL);     
+    shell_exec('crontab crontab.txt');     
+
+    $contents = file_get_contents($reminder);
+    $contents = str_replace($selectedLine, '', $contents);
+    file_put_contents($reminder, $contents);
+  
+    $answer = 'Canceled reminder about '.$selectedLine;
+  } elseif ($command == "crontab") {
+    $answer = shell_exec('crontab -l');
+  } elseif ($command == "deletereminders") {    
+    shell_exec('crontab -r');
+    shell_exec('crontab -e');
+    file_put_contents($reminder, "");
+    $answer = "Remove all reminders.";
+  } else{
+    $answer = "Command not found.";     
+  }
 }
 
 if($record == true)
